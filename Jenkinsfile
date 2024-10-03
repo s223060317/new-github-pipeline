@@ -4,18 +4,18 @@ pipeline {
         stage("Build Stage") {
             steps {
                 echo 'Executing Maven build: cleaning and packaging the project'
-                // Uncomment the next line to run the actual Maven command
-                // sh 'mvn clean install'
+                // Running the Maven clean and package commands
+                sh 'mvn clean package'
             }
         }
         stage("Testing: Unit & Integration") {
             steps {
                 echo 'Running JUnit tests to validate code functionality'
-                // Uncomment the next line to run the actual test command
-                // sh 'mvn test'
+                // Running unit tests using Maven
+                sh 'mvn test'
                 echo 'Running integration tests to verify component interactions'
-                // Uncomment the next line to run the actual integration tests
-                // sh 'mvn verify'
+                // Running integration tests using Maven
+                sh 'mvn verify'
             }
             post {
                 success {
@@ -30,7 +30,7 @@ pipeline {
                     emailext(
                         to: "dominicdiona@gmail.com",
                         subject: "ERROR: Unit and/or Integration Tests Failed",
-                        body: "Unit or integration tests failed. Please check the logs to diagnose the issue.",
+                        body: "Unit or integration tests failed. Please check the attached logs for details on the failure.",
                         attachLog: true
                     )
                 }
@@ -39,22 +39,22 @@ pipeline {
         stage("Code Quality Analysis") {
             steps {
                 echo 'Starting SonarQube analysis for code quality assurance'
-                // Uncomment the next line to run SonarQube analysis
-                // sh 'mvn sonar:sonar'
+                // Running SonarQube analysis using Maven
+                sh 'mvn sonar:sonar'
             }
         }
         stage("Security Assessment") {
             steps {
                 echo 'Initiating security scan using OWASP ZAP'
-                // Uncomment the next line to run OWASP ZAP scan
-                // sh 'zap-cli quick-scan --self-contained --start-options "-config api.disablekey=true" http://localhost:8080'
+                // Running OWASP ZAP for security scanning
+                sh 'zap-cli quick-scan --self-contained --start-options "-config api.disablekey=true" http://localhost:8080'
             }
             post {
                 success {
                     emailext(
                         to: "dominicdiona@gmail.com",
                         subject: "SUCCESS: Security Scan Completed",
-                        body: "The security scan has been successfully completed with no issues detected.",
+                        body: "The security scan was successfully completed with no issues detected. Please review the attached logs for detailed information.",
                         attachLog: true
                     )
                 }
@@ -62,7 +62,7 @@ pipeline {
                     emailext(
                         to: "dominicdiona@gmail.com",
                         subject: "ERROR: Security Scan Failed",
-                        body: "The security scan encountered issues. Review and address the vulnerabilities.",
+                        body: "The security scan failed. Please review the attached logs for details on the detected vulnerabilities or issues.",
                         attachLog: true
                     )
                 }
@@ -71,22 +71,22 @@ pipeline {
         stage("Staging Deployment") {
             steps {
                 echo 'Deploying application to the staging environment (AWS EC2, S3 bucket)'
-                // Uncomment the next line to deploy to staging
-                // sh 'aws deploy create-deployment --application-name my-app --deployment-group-name staging-group --s3-location bucket=staging-bucket,key=my-app.zip'
+                // Deploying to the staging environment
+                sh 'scp target/*.jar user@staging-server:/path/to/deploy'
             }
         }
         stage("Staging Environment Tests") {
             steps {
                 echo 'Executing integration tests on the staging environment'
-                // Uncomment the next line to run integration tests on staging
-                // sh 'mvn verify -Dtest=IntegrationTest'
+                // Running integration tests in the staging environment
+                sh 'run-integration-tests-on-staging'
             }
         }
         stage("Production Deployment") {
             steps {
                 echo 'Deploying the application to the production environment'
-                // Uncomment the next line to deploy to production
-                // sh 'aws deploy create-deployment --application-name my-app --deployment-group-name production-group --s3-location bucket=production-bucket,key=my-app.zip'
+                // Deploying to the production environment
+                sh 'scp target/*.jar user@production-server:/path/to/deploy'
             }
         }
         stage("Finalization") {
@@ -100,7 +100,7 @@ pipeline {
             emailext(
                 to: "dominicdiona@gmail.com",
                 subject: "Production deployment successful!",
-                body: "Check the attached log for details",
+                body: "The application was successfully deployed to production. Check the attached log for details.",
                 attachLog: true
             )
         }
@@ -108,7 +108,7 @@ pipeline {
             emailext(
                 to: "dominicdiona@gmail.com",
                 subject: "Production deployment failed!",
-                body: "Production deployment failed. Review the errors and retry.",
+                body: "The production deployment failed. Review the attached logs for errors and retry the deployment after fixing the issues.",
                 attachLog: true
             )
         }
